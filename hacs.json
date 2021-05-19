@@ -1,5 +1,5 @@
 {
-    "name": "Ring Hass-io Add-on",
+    "name": "My Ring Hass-io Add-on",
     "render_readme": true,
     "content_in_root": false,
     "domains": ["camera"]

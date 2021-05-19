@@ -1,5 +1,5 @@
 {
-    "name": "Ring Livestream",
+    "name": "My Ring Livestream",
     "version": "1.35",
     "slug": "ringlivestream",
     "description": "A Home Assistant add-on to enable live streams of Ring Cameras.",

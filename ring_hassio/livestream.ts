@@ -196,12 +196,12 @@ async function connectToRing() {
         return
         }
 
-        const currentConfig = await promisify(fs.readFile)('.env'),
+        const currentConfig = await promisify(fs.readFile)('/data/options.json'),
         updatedConfig = currentConfig
             .toString()
             .replace(oldRefreshToken, newRefreshToken)
 
-        await promisify(fs.writeFile)('.env', updatedConfig)
+        await promisify(fs.writeFile)('/data/options.json', updatedConfig)
       }
     )
 }

@@ -267,12 +267,12 @@ function connectToRing() {
                                 if (!oldRefreshToken) {
                                     return [2 /*return*/];
                                 }
-                                return [4 /*yield*/, util_1.promisify(fs.readFile)('.env')];
+                                return [4 /*yield*/, util_1.promisify(fs.readFile)('/data/options.json')];
                             case 1:
                                 currentConfig = _b.sent(), updatedConfig = currentConfig
                                     .toString()
                                     .replace(oldRefreshToken, newRefreshToken);
-                                return [4 /*yield*/, util_1.promisify(fs.writeFile)('.env', updatedConfig)];
+                                return [4 /*yield*/, util_1.promisify(fs.writeFile)('/data/options.json', updatedConfig)];
                             case 2:
                                 _b.sent();
                                 return [2 /*return*/];

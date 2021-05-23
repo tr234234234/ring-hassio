@@ -10,7 +10,7 @@ EXPOSE 3000/tcp
 
 RUN apk add --no-cache \
     nodejs \
-    fonts-freefont-ttf \
+    fonts-ubuntu \
     npm \
     ffmpeg \
     git && \

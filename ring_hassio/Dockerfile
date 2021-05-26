@@ -20,7 +20,6 @@ RUN apk add --no-cache \
     cd ring-hassio/ring_hassio && \
     npm install --unsafe-perm && \
     chmod a+x run.sh && \
-    cp ffmpeg node_modules/ffmpeg-for-homebridge/ && \
-    touch public/snapshot.png
+    cp ffmpeg node_modules/ffmpeg-for-homebridge/
 
 CMD [ "/ring-hassio/ring_hassio/run.sh" ]

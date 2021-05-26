@@ -307,6 +307,33 @@ async function startHttpServer() {
               { bufferSize: 64 * 1024 });
           stream.pipe(res);
           break;
+        case '.png':
+          // Grab new snapshot
+          try {
+              const snapshotBuffer = await camera.getSnapshot().catch(error => {
+                  console.log('[ERROR] Unable to retrieve snapshot because:' + error.message)
+              })
+              res.writeHead(200,{'Content-Type':'image/png'});
+              res.write(snapshotBuffer);
+              res.end();
+          
+              fs.writeFile(publicOutputDirectory + '/snapshot.png', snapshotBuffer, (err) => {
+                  // throws an error, you could also catch it here
+                  if (err) throw err;
+                  
+                  // success case, the file was saved
+                  var today = new Date();
+                  var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                  console.log(`Snapshot saved! ${time}`);
+          
+                  })
+          } catch (e) {
+              // Failed to retrieve snapshot. We send text of notification along with error image.
+              // Most common errors are due to expired API token, or battery-powered camera taking too long to wake.
+              console.log('Unable to get snapshot.')
+                  //sendNotification(notifyTitle, notifyMessage, 'error.png')
+          }
+          break;
         default:
           console.log('unknown file type: ' +
               path.extname(uri));

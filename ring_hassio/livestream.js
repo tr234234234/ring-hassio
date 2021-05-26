@@ -322,78 +322,113 @@ function startHttpServer() {
                 console.log('mapped filename: ' + filename);
                 fs.exists(filename, function (exists) {
                     return __awaiter(this, void 0, void 0, function () {
-                        var today, time, stream;
-                        return __generator(this, function (_a) {
-                            if (!exists) {
-                                console.log('file not found: ' + filename);
-                                res.writeHead(404, { 'Content-Type': 'text/plain' });
-                                res.write('file not found: %s\n', filename);
-                                res.end();
-                            }
-                            else {
-                                console.log('sending file: ' + filename);
-                                switch (path.extname(uri)) {
-                                    case '.m3u8':
-                                        // start the sip if we are not in a call
-                                        console.log("inCall = " + inCall);
-                                        if (inCall == false) {
-                                            //await startStream();
+                        var _a, today, time, stream, snapshotBuffer, e_2;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    if (!!exists) return [3 /*break*/, 1];
+                                    console.log('file not found: ' + filename);
+                                    res.writeHead(404, { 'Content-Type': 'text/plain' });
+                                    res.write('file not found: %s\n', filename);
+                                    res.end();
+                                    return [3 /*break*/, 9];
+                                case 1:
+                                    console.log('sending file: ' + filename);
+                                    _a = path.extname(uri);
+                                    switch (_a) {
+                                        case '.m3u8': return [3 /*break*/, 2];
+                                        case '.ts': return [3 /*break*/, 3];
+                                        case '.png': return [3 /*break*/, 4];
+                                    }
+                                    return [3 /*break*/, 8];
+                                case 2:
+                                    // start the sip if we are not in a call
+                                    console.log("inCall = " + inCall);
+                                    if (inCall == false) {
+                                        //await startStream();
+                                    }
+                                    today = new Date();
+                                    time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                                    if (inCall == false) {
+                                        console.log("Sleeping... " + time);
+                                        //await delay(3500);
+                                        inCall = true;
+                                    }
+                                    //
+                                    today = new Date();
+                                    time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                                    console.log("writing file " + time);
+                                    fs.readFile(filename, function (err, contents) {
+                                        if (err) {
+                                            res.writeHead(500);
+                                            res.end();
                                         }
-                                        today = new Date();
-                                        time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-                                        if (inCall == false) {
-                                            console.log("Sleeping... " + time);
-                                            //await delay(3500);
-                                            inCall = true;
-                                        }
-                                        //
-                                        today = new Date();
-                                        time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-                                        console.log("writing file " + time);
-                                        fs.readFile(filename, function (err, contents) {
-                                            if (err) {
-                                                res.writeHead(500);
-                                                res.end();
-                                            }
-                                            else if (contents) {
-                                                res.writeHead(200, { 'Content-Type': 'application/vnd.apple.mpegurl' });
-                                                var ae = req.headers['accept-encoding'];
-                                                if (ae && ae.match(/\bgzip\b/)) {
-                                                    zlib.gzip(contents, function (err, zip) {
-                                                        if (err)
-                                                            throw err;
-                                                        res.writeHead(200, { 'content-encoding': 'gzip' });
-                                                        res.end(zip);
-                                                    });
-                                                }
-                                                else {
-                                                    res.end(contents, 'utf-8');
-                                                }
+                                        else if (contents) {
+                                            res.writeHead(200, { 'Content-Type': 'application/vnd.apple.mpegurl' });
+                                            var ae = req.headers['accept-encoding'];
+                                            if (ae && ae.match(/\bgzip\b/)) {
+                                                zlib.gzip(contents, function (err, zip) {
+                                                    if (err)
+                                                        throw err;
+                                                    res.writeHead(200, { 'content-encoding': 'gzip' });
+                                                    res.end(zip);
+                                                });
                                             }
                                             else {
-                                                console.log('empty playlist');
-                                                res.writeHead(500);
-                                                res.end();
+                                                res.end(contents, 'utf-8');
                                             }
-                                        });
-                                        break;
-                                    case '.ts':
-                                        if (uri == '/public/stream0.ts') {
-                                            console.log('sleep 1 sec');
-                                            //await delay(1000);
                                         }
-                                        res.writeHead(200, { 'Content-Type': 'video/MP2T' });
-                                        stream = fs.createReadStream(filename, { bufferSize: 64 * 1024 });
-                                        stream.pipe(res);
-                                        break;
-                                    default:
-                                        console.log('unknown file type: ' +
-                                            path.extname(uri));
-                                        res.writeHead(500);
-                                        res.end();
-                                }
+                                        else {
+                                            console.log('empty playlist');
+                                            res.writeHead(500);
+                                            res.end();
+                                        }
+                                    });
+                                    return [3 /*break*/, 9];
+                                case 3:
+                                    if (uri == '/public/stream0.ts') {
+                                        console.log('sleep 1 sec');
+                                        //await delay(1000);
+                                    }
+                                    res.writeHead(200, { 'Content-Type': 'video/MP2T' });
+                                    stream = fs.createReadStream(filename, { bufferSize: 64 * 1024 });
+                                    stream.pipe(res);
+                                    return [3 /*break*/, 9];
+                                case 4:
+                                    _b.trys.push([4, 6, , 7]);
+                                    return [4 /*yield*/, camera.getSnapshot()["catch"](function (error) {
+                                            console.log('[ERROR] Unable to retrieve snapshot because:' + error.message);
+                                        })];
+                                case 5:
+                                    snapshotBuffer = _b.sent();
+                                    res.writeHead(200, { 'Content-Type': 'image/png' });
+                                    res.write(snapshotBuffer);
+                                    res.end();
+                                    fs.writeFile(publicOutputDirectory + '/snapshot.png', snapshotBuffer, function (err) {
+                                        // throws an error, you could also catch it here
+                                        if (err)
+                                            throw err;
+                                        // success case, the file was saved
+                                        var today = new Date();
+                                        var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                                        console.log("Snapshot saved! " + time);
+                                    });
+                                    return [3 /*break*/, 7];
+                                case 6:
+                                    e_2 = _b.sent();
+                                    // Failed to retrieve snapshot. We send text of notification along with error image.
+                                    // Most common errors are due to expired API token, or battery-powered camera taking too long to wake.
+                                    console.log('Unable to get snapshot.');
+                                    return [3 /*break*/, 7];
+                                case 7: return [3 /*break*/, 9];
+                                case 8:
+                                    console.log('unknown file type: ' +
+                                        path.extname(uri));
+                                    res.writeHead(500);
+                                    res.end();
+                                    _b.label = 9;
+                                case 9: return [2 /*return*/];
                             }
-                            return [2 /*return*/];
                         });
                     });
                 });

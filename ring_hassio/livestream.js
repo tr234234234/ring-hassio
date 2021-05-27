@@ -41,6 +41,7 @@ require("dotenv/config");
 var ring_client_api_1 = require("ring-client-api");
 var util_1 = require("util");
 var fs = require('fs'), path = require('path'), http = require('http'), url = require('url'), zlib = require('zlib');
+var Jimp = require('jimp');
 var PORT = process.env.RING_PORT;
 //
 var CAMERA_NAME = process.env.CAMERA_NAME;
@@ -53,6 +54,7 @@ var publicOutputDirectory;
 var sockets;
 var nextSocketId;
 var server;
+var imageBuffer;
 function sleep(milliseconds) {
     var date = Date.now();
     console.log("time " + date);
@@ -398,12 +400,37 @@ function startHttpServer() {
                                     _b.trys.push([4, 6, , 7]);
                                     return [4 /*yield*/, camera.getSnapshot()["catch"](function (error) {
                                             console.log('[ERROR] Unable to retrieve snapshot because:' + error.message);
-                                        })];
+                                        })
+                                        //add text to image
+                                    ];
                                 case 5:
                                     snapshotBuffer = _b.sent();
-                                    res.writeHead(200, { 'Content-Type': 'image/png' });
-                                    res.write(snapshotBuffer);
-                                    res.end();
+                                    //add text to image
+                                    Jimp.read(snapshotBuffer)
+                                        .then(function (image) {
+                                        // success case, the file was saved
+                                        var today = new Date();
+                                        ' ';
+                                        var time = today.toLocaleString('en-US');
+                                        Jimp.loadFont(Jimp.FONT_SANS_16_WHITE).then(function (font) {
+                                            image.print(font, 10, 1, "" + time);
+                                            image.getBuffer(Jimp.MIME_PNG, function (err, imageBuffer) {
+                                                //console.log(imageBuffer);
+                                                //console.log(snapshotBuffer)
+                                                res.writeHead(200, { 'Content-Type': 'image/png' });
+                                                res.write(imageBuffer);
+                                                res.end();
+                                            });
+                                        });
+                                    })["catch"](function (err) {
+                                        // Handle an exception.
+                                        console.log('Cound not add text to image');
+                                    });
+                                    //console.log(imageBuffer);
+                                    //console.log(snapshotBuffer)
+                                    //res.writeHead(200,{'Content-Type':'image/png'});
+                                    //res.write(snapshotBuffer);
+                                    //res.end();
                                     fs.writeFile(publicOutputDirectory + '/snapshot.png', snapshotBuffer, function (err) {
                                         // throws an error, you could also catch it here
                                         if (err)
@@ -419,6 +446,7 @@ function startHttpServer() {
                                     // Failed to retrieve snapshot. We send text of notification along with error image.
                                     // Most common errors are due to expired API token, or battery-powered camera taking too long to wake.
                                     console.log('Unable to get snapshot.');
+                                    console.error(e_2.name + ': ' + e_2.message);
                                     return [3 /*break*/, 7];
                                 case 7: return [3 /*break*/, 9];
                                 case 8:

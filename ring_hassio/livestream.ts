@@ -8,7 +8,9 @@ const fs = require('fs'),
   path = require('path'),
   http = require('http'),
   url = require('url'),
-  zlib = require('zlib')  
+  zlib = require('zlib') 
+  var Jimp = require('jimp');
+ 
 
 const PORT = process.env.RING_PORT;
 //
@@ -22,6 +24,7 @@ var publicOutputDirectory;
 var sockets;
 var nextSocketId;
 var server;
+var imageBuffer;
 
 function sleep(milliseconds) {
   const date = Date.now();
@@ -313,9 +316,32 @@ async function startHttpServer() {
               const snapshotBuffer = await camera.getSnapshot().catch(error => {
                   console.log('[ERROR] Unable to retrieve snapshot because:' + error.message)
               })
-              res.writeHead(200,{'Content-Type':'image/png'});
-              res.write(snapshotBuffer);
-              res.end();
+              //add text to image
+              Jimp.read(snapshotBuffer)
+                .then(image => {
+                  // success case, the file was saved
+                  var today = new Date();' '
+                  var time = today.toLocaleString('en-US');
+                  Jimp.loadFont(Jimp.FONT_SANS_16_WHITE).then(font => {
+                    image.print(font, 10, 1, `${time}`);
+                    image.getBuffer(Jimp.MIME_PNG, (err, imageBuffer) => {
+                      //console.log(imageBuffer);
+                      //console.log(snapshotBuffer)
+                      res.writeHead(200,{'Content-Type':'image/png'});
+                      res.write(imageBuffer);
+                      res.end();
+                    });
+                    });
+                })
+                .catch(err => {
+                  // Handle an exception.
+                  console.log ('Cound not add text to image')
+                });
+                //console.log(imageBuffer);
+                //console.log(snapshotBuffer)
+              //res.writeHead(200,{'Content-Type':'image/png'});
+              //res.write(snapshotBuffer);
+              //res.end();
           
               fs.writeFile(publicOutputDirectory + '/snapshot.png', snapshotBuffer, (err) => {
                   // throws an error, you could also catch it here
@@ -331,6 +357,7 @@ async function startHttpServer() {
               // Failed to retrieve snapshot. We send text of notification along with error image.
               // Most common errors are due to expired API token, or battery-powered camera taking too long to wake.
               console.log('Unable to get snapshot.')
+              console.error(e.name + ': ' + e.message)
                   //sendNotification(notifyTitle, notifyMessage, 'error.png')
           }
           break;
